@@ -4,15 +4,13 @@ class Product
     private int $id;
     private string $name;
     private float $price;
-    private string $category;
     private int $stock;
 
-    public function __construct(int $id, string $name, float $price, string $category, int $stock)
+    public function __construct(int $id, string $name, float $price, int $stock)
     {
         $this->id = $id;
         $this->name = $name;
         $this->price = $price;
-        $this->category = $category;
         $this->stock = $stock;
     }
 
@@ -44,16 +42,6 @@ class Product
     public function setName(string $name): void
     {
         $this->name = $name;
-    }
-
-    public function getCategory(): string
-    {
-        return $this->category;
-    }
-
-    public function setCategory(string $category): void
-    {
-        $this->category = $category;
     }
 
     public function getStock(): int

@@ -23,16 +23,49 @@ class Checkout
                 'product' => $product,
                 'quantity' => $quantity
             ];
+
+            $this->addToSubTotal($product, $quantity);
+            $this->updateStock($product, $quantity);
+        } else {
+            echo "Estoque insuficiente para o produto {$product->getName()}";
         }
     }
 
-    public function calculateSubTotal($product, $quantity): float
+    public function addToSubTotal($product, $quantity): float
     {
         $this->subtotal += $product->getPrice() * $quantity;
+        return $this->subtotal;
+    }
+
+    public function removeFromSubTotal($product, $quantity): float
+    {
+        $this->subtotal -= $product->getPrice() * $quantity;
+        return $this->subtotal;
+    }
+
+    public function getSubtotal(): float
+    {
+        return $this->subtotal;
     }
 
     public function updateStock($product, $quantity): void
     {
         $product->setStock($product->getStock()-$quantity);
     }
+
+    public function listProducts(): void
+    {
+        if (empty($this->products)) 
+        {
+            echo "O carrinho está vazio.";
+            return;
+        }
+
+        foreach ($this->products as $item) 
+        {
+            $product = $item['product'];
+            $quantity = $item['quantity'];
+        }
+    }
+
 }
