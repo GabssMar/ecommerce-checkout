@@ -24,48 +24,90 @@ class Checkout
                 'quantity' => $quantity
             ];
 
-            $this->addToSubTotal($product, $quantity);
-            $this->updateStock($product, $quantity);
+            $this->reduceStock($product, $quantity);
+            $this->updateSubTotal();
         } else {
             echo "Estoque insuficiente para o produto {$product->getName()}";
         }
     }
 
-    public function addToSubTotal($product, $quantity): float
+    public function removeFromCart(Product $product, int $quantity): void
     {
-        $this->subtotal += $product->getPrice() * $quantity;
-        return $this->subtotal;
+        foreach ($this->products as $key => $item) {
+            if ($item['product']->getId() === $product->getId()) {
+                if ($quantity >= $item['quantity']) {
+                    $quantityToReturn = $item['quantity'];
+                    unset($this->products[$key]);
+                } else {
+                    $item['quantity'] -= $quantity;
+                    $quantityToReturn = $quantity;
+                }
+                $this->increaseStock($item['product'], $quantityToReturn);
+                $this->updateSubTotal();
+                return;
+            }
+        }
+        echo "Produto não encontrado no carrinho";
     }
 
-    public function removeFromSubTotal($product, $quantity): float
+    public function updateSubTotal(): void
     {
-        $this->subtotal -= $product->getPrice() * $quantity;
-        return $this->subtotal;
+        $this->subtotal = 0;
+        foreach ($this->products as $item) {
+            $this->subtotal += $item['product']->getPrice() * $item['quantity'];
+        }
     }
 
-    public function getSubtotal(): float
-    {
-        return $this->subtotal;
-    }
-
-    public function updateStock($product, $quantity): void
+    public function reduceStock($product, $quantity): void
     {
         $product->setStock($product->getStock()-$quantity);
     }
 
-    public function listProducts(): void
+    public function increaseStock($product, $quantity): void
+    {
+        $product->setStock($product->getStock()+$quantity);
+    }
+
+    public function listProducts(): array
     {
         if (empty($this->products)) 
         {
-            echo "O carrinho está vazio.";
-            return;
+            return [];
         }
 
-        foreach ($this->products as $item) 
+        $items = [];
+
+        foreach ($this->products as $item)
         {
             $product = $item['product'];
             $quantity = $item['quantity'];
+
+            $items[] = [
+                "Nome" => $product->getName(),
+                "Preço" => $product->getPrice(),
+                "Quantidade" => $quantity,
+                "Subtotal" => $product->getPrice() * $quantity
+            ];
+            
         }
+        return $items;
     }
 
+    public function getTotalCart() : float
+    {
+        $totalCart = 0;
+        foreach($this->products as $item) {
+            $totalCart += $item['product']->getPrice() * $item['quantity'];
+        }
+        return $totalCart;
+    }
+
+    public function addDiscount(string $cupon): float {
+        $totalCart = $this->getTotalCart();
+        if ($cupon === 'DESCONTO10') {
+            $totalCart -= $totalCart * 0.1;
+            $this->subtotal = $totalCart;
+        }
+        return $totalCart;
+    }
 }
